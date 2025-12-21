@@ -1,0 +1,16 @@
+[Unit]
+Description=Skyroulette
+After=network.target
+
+[Service]
+Type=simple
+User=thomas
+WorkingDirectory=/home/root/skyroulette/backend
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/home/root/skyroulette/backend/.env
+ExecStart=/home/root/skyroulette/backend/run.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
