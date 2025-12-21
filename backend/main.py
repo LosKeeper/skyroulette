@@ -3,7 +3,7 @@ import discord
 import random
 import os
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI, Depends, Request, HTTPException
 from dotenv import load_dotenv
 import state
@@ -95,28 +95,41 @@ async def status():
         "history": state.history[-5:]
     }
 
-# Route publique renvoyant l'historique enrichi (avec flag `active`)
-
 
 @app.get("/history")
 async def get_history():
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     enriched = []
+
     for entry in state.history:
         ends_at_iso = entry.get("ends_at")
         active = False
+
         try:
             if ends_at_iso:
                 ends = datetime.fromisoformat(ends_at_iso)
+                if ends.tzinfo is None:
+                    ends = ends.replace(tzinfo=timezone.utc)
                 active = now < ends
         except Exception:
             active = False
+
         enriched.append({
             "member": entry.get("member"),
-            "time": entry.get("time"),
-            "ends_at": entry.get("ends_at"),
+            "time": (
+                datetime.fromisoformat(entry["time"])
+                .replace(tzinfo=timezone.utc)
+                .isoformat()
+            ),
+            "ends_at": (
+                datetime.fromisoformat(entry["ends_at"])
+                .replace(tzinfo=timezone.utc)
+                .isoformat()
+                if entry.get("ends_at") else None
+            ),
             "active": active
         })
+
     return {"history": enriched}
 
 
