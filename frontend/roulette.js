@@ -17,17 +17,20 @@ let history = [];
 
 // util: format date FR
 function formatDate(ts) {
-    const d = new Date(ts);
-    const formatter = new Intl.DateTimeFormat("fr-FR", {
+    const d = typeof ts === "number"
+        ? new Date(ts * 1000) // timestamp UNIX
+        : new Date(ts);
+
+    return new Intl.DateTimeFormat("fr-FR", {
         timeZone: "Europe/Paris",
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
-    });
-    return formatter.format(d);
+    }).format(d);
 }
+
 
 function initialsFromName(name) {
     if (!name) return "??";
