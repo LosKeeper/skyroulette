@@ -1,16 +1,27 @@
+
 [Unit]
-Description=Skyroulette
-After=network.target
+Description=Skyroulette (FastAPI + Discord bot)
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 User=root
 WorkingDirectory=/root/skyroulette/backend
 Environment=PYTHONUNBUFFERED=1
+# Chargez les variables d'environnement si le fichier existe
 EnvironmentFile=/root/skyroulette/backend/.env
+# Lance le wrapper qui active un venv éventuel et démarre uvicorn
 ExecStart=/root/skyroulette/backend/run.sh
 Restart=on-failure
 RestartSec=5
+RestartPreventExitStatus=23
+# Sorties dans le journal systemd
+StandardOutput=journal
+StandardError=journal
+# Assure l'arrêt propre du processus
+KillMode=control-group
 
 [Install]
 WantedBy=multi-user.target
+
