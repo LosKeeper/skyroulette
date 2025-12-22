@@ -164,6 +164,43 @@ async def get_history():
     return {"history": enriched}
 
 
+@app.get("/top-banned")
+async def top_banned():
+    """Retourne la personne ayant cumulé le plus de temps de timeout.
+
+    Retourne `member`, `total_seconds` et `total_minutes`.
+    """
+    from datetime import datetime, timezone
+
+    totals = {}
+    for entry in state.history:
+        member = entry.get("member")
+        starts_iso = entry.get("time")
+        ends_iso = entry.get("ends_at")
+        if not member or not starts_iso or not ends_iso:
+            continue
+        try:
+            starts = datetime.fromisoformat(starts_iso)
+            ends = datetime.fromisoformat(ends_iso)
+            if starts.tzinfo is None:
+                starts = starts.replace(tzinfo=timezone.utc)
+            if ends.tzinfo is None:
+                ends = ends.replace(tzinfo=timezone.utc)
+            duration = (ends - starts).total_seconds()
+            if duration > 0:
+                totals[member] = totals.get(member, 0) + duration
+        except Exception:
+            continue
+
+    if not totals:
+        return {"member": None, "total_seconds": 0, "total_minutes": 0}
+
+    top_member = max(totals, key=totals.get)
+    secs = int(totals[top_member])
+    minutes = secs // 60
+    return {"member": top_member, "total_seconds": secs, "total_minutes": minutes}
+
+
 def run_bot():
     bot.run(os.getenv("DISCORD_TOKEN"))
 
