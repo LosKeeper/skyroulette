@@ -30,6 +30,14 @@ Endpoints principaux
 - `POST /spin` : lance un spin si possible. Le serveur applique une vérification d'origine si `ALLOWED_ORIGIN` est configuré.
 - `GET /status` : informations rapides (online, can_spin, history).
 - `GET /history` : historique enrichi des spins.
+ - `GET /history` : historique enrichi des spins.
+
+Persistance et endpoints connexes
+- Le backend persiste l'historique des spins dans `backend/timeouts.json` via le module `backend/timeouts_store.py`. Le fichier est créé automatiquement et écrit de façon sûre.
+- Un nouvel endpoint `GET /top-banned` renvoie la personne ayant cumulé le plus de temps de timeout (format : `{"member": <nom>, "total_seconds": <int>, "total_minutes": <int>}`).
+
+Frontend
+- La page front affiche désormais un "Leaderboard" reprenant le résultat de `/top-banned`. Le client (`frontend/roulette.js`) récupère ce résultat au chargement et l'actualise après chaque spin.
 
 Notes
 - Le frontend est dans le dossier `frontend/` et est monté sur `/static`.

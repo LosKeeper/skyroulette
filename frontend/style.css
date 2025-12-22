@@ -162,6 +162,69 @@ body {
     overflow: auto;
 }
 
+/* Leaderboard (visually aligned with history) */
+.leaderboard-section {
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.00));
+    border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.leaderboard-header {
+    margin-bottom: 10px;
+}
+
+.leaderboard-box {
+    padding: 6px;
+    min-height: 64px;
+}
+
+.leaderboard-empty {
+    color: #7d97b3;
+    padding: 12px;
+}
+
+.leaderboard-entry {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.0));
+    border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.avatar-lg {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #2b7a78, #1b5f63);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #eef8f6;
+    box-shadow: inset 0 -6px 12px rgba(0, 0, 0, 0.25);
+}
+
+.meta-lg {
+    flex: 1;
+    min-width: 0;
+}
+
+.member-lg {
+    font-weight: 700;
+    color: #eaf6ff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.time-lg {
+    font-size: 12px;
+    color: #9fb3d6;
+}
+
 .history-header {
     display: flex;
     align-items: center;

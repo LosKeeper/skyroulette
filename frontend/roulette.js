@@ -6,6 +6,7 @@ const btn = document.getElementById("spin-btn");
 const resultEl = document.getElementById("result");
 const historyList = document.getElementById("history");
 const clearBtn = document.getElementById("clear-history");
+const leaderboardEl = document.getElementById("leaderboard");
 
 const SPIN_DURATION_MS = 5000;
 const HISTORY_KEY = "skyroulette_history_v1";
@@ -108,6 +109,33 @@ async function loadHistory() {
     renderHistory();
 }
 
+
+async function loadTopBanned() {
+    if (!leaderboardEl) return;
+    try {
+        const res = await fetch('/top-banned');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!data || !data.member) {
+            leaderboardEl.innerHTML = '<div class="leaderboard-empty">Aucune donnée</div>';
+            return;
+        }
+        const mins = data.total_minutes;
+        const secs = data.total_seconds % 60;
+        leaderboardEl.innerHTML = `
+            <div class="leaderboard-entry">
+                <div class="avatar-lg">${initialsFromName(data.member)}</div>
+                <div class="meta-lg">
+                    <div class="member-lg">${data.member}</div>
+                    <div class="time-lg">${mins} minutes cumulées</div>
+                </div>
+            </div>
+        `;
+    } catch (e) {
+        leaderboardEl.innerHTML = '<div class="leaderboard-empty">Erreur de chargement</div>';
+    }
+}
+
 clearBtn.addEventListener("click", () => {
     if (!confirm("Effacer l'historique local ? (l'historique serveur reste inchangé)")) return;
     history = [];
@@ -117,6 +145,7 @@ clearBtn.addEventListener("click", () => {
 
 // initial load
 loadHistory();
+loadTopBanned();
 
 btn.addEventListener("click", async () => {
     btn.disabled = true;
@@ -149,7 +178,7 @@ btn.addEventListener("click", async () => {
                 resultEl.classList.add("success");
 
                 // Rafraîchir depuis le serveur pour récupérer l'historique partagé (et n'afficher que les 5 derniers)
-                setTimeout(loadHistory, 400);
+                setTimeout(() => { loadHistory(); loadTopBanned(); }, 400);
             } else if (data.status === "cooldown") {
                 resultEl.innerText = "⏳ Roulette déjà utilisée cette heure";
                 resultEl.classList.add("note");
