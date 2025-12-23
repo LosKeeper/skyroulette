@@ -33,7 +33,7 @@ Endpoints principaux
 
 Persistance et endpoints connexes
 - Le backend persiste l'historique des spins dans `backend/timeouts.json` via le module `backend/timeouts_store.py`. Le fichier est créé automatiquement et écrit de façon sûre.
-- Un nouvel endpoint `GET /top-banned` renvoie la personne ayant cumulé le plus de temps de timeout (format : `{"member": <nom>, "total_seconds": <int>, "total_minutes": <int>}`).
+- Un nouvel endpoint `GET /top-banned` renvoie les N personnes ayant cumulé le plus de temps de timeout (format curseur sur : `{"member": <nom>, "total_seconds": <int>, "duration_str": <format H-M-S>}`).
 
 Frontend
 - La page front affiche désormais un "Leaderboard" reprenant le résultat de `/top-banned`. Le client (`frontend/roulette.js`) récupère ce résultat au chargement et l'actualise après chaque spin.
