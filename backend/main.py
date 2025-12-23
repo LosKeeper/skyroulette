@@ -1,4 +1,5 @@
 # backend/main.py
+import time
 import discord
 import random
 import os
@@ -165,13 +166,12 @@ async def get_history():
 
 
 @app.get("/top-banned")
-async def top_banned():
-    """Retourne la personne ayant cumulé le plus de temps de timeout.
+async def top_banned(limit: int = 1):
+    """Retourne la liste des personnes ayant cumulé le plus de temps de timeout.
 
-    Retourne `member`, `total_seconds` et `total_minutes`.
+    Args:
+        limit (int): Nombre maximum de membres à retourner (défaut: 1).
     """
-    from datetime import datetime, timezone
-
     totals = {}
     for entry in state.history:
         member = entry.get("member")
@@ -193,12 +193,25 @@ async def top_banned():
             continue
 
     if not totals:
-        return {"member": None, "total_seconds": 0, "total_minutes": 0}
+        return []
 
-    top_member = max(totals, key=totals.get)
-    secs = int(totals[top_member])
-    minutes = secs // 60
-    return {"member": top_member, "total_seconds": secs, "total_minutes": minutes}
+    # Tri par durée décroissante
+    sorted_totals = sorted(totals.items(), key=lambda item: item[1], reverse=True)
+
+    # Récupération des N premiers
+    top_n = sorted_totals[:limit]
+
+    results = []
+    for member, total_sec in top_n:
+        secs = int(total_sec)
+        minutes = secs // 60
+        results.append({
+            "member": member,
+            "total_seconds": secs,
+            "duration_str": time.strftime('%H:%M:%S', time.gmtime(secs))
+        })
+
+    return results
 
 
 def run_bot():
