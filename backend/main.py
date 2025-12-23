@@ -196,7 +196,8 @@ async def top_banned(limit: int = 1):
         return []
 
     # Tri par durée décroissante
-    sorted_totals = sorted(totals.items(), key=lambda item: item[1], reverse=True)
+    sorted_totals = sorted(
+        totals.items(), key=lambda item: item[1], reverse=True)
 
     # Récupération des N premiers
     top_n = sorted_totals[:limit]
@@ -208,7 +209,7 @@ async def top_banned(limit: int = 1):
         results.append({
             "member": member,
             "total_seconds": secs,
-            "duration_str": time.strftime('%H:%M:%S', time.gmtime(secs))
+            "total_minutes": minutes
         })
 
     return results
