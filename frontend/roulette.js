@@ -113,24 +113,28 @@ async function loadHistory() {
 async function loadTopBanned() {
     if (!leaderboardEl) return;
     try {
-        const res = await fetch('/top-banned');
+        const res = await fetch('/top-banned?limit=5');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
-        if (!data || !data.member) {
+
+        if (!Array.isArray(data) || data.length === 0) {
             leaderboardEl.innerHTML = '<div class="leaderboard-empty">Aucune donnée</div>';
             return;
         }
-        const mins = data.total_minutes;
-        const secs = data.total_seconds % 60;
-        leaderboardEl.innerHTML = `
-            <div class="leaderboard-entry">
-                <div class="avatar-lg">${initialsFromName(data.member)}</div>
+
+        // On génère le HTML pour chaque entrée du top 5
+        // On ajoute un petit margin-bottom inline pour l'espacement car le conteneur n'a pas de gap défini
+        const html = data.map(item => `
+            <div class="leaderboard-entry" style="margin-bottom: 8px;">
+                <div class="avatar-lg">${initialsFromName(item.member)}</div>
                 <div class="meta-lg">
-                    <div class="member-lg">${data.member}</div>
-                    <div class="time-lg">${mins} minutes cumulées</div>
+                    <div class="member-lg">${item.member}</div>
+                    <div class="time-lg">${item.total_minutes} minutes cumulées</div>
                 </div>
             </div>
-        `;
+        `).join('');
+
+        leaderboardEl.innerHTML = html;
     } catch (e) {
         leaderboardEl.innerHTML = '<div class="leaderboard-empty">Erreur de chargement</div>';
     }
