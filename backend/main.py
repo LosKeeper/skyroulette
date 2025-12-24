@@ -16,8 +16,9 @@ import asyncio
 
 load_dotenv()
 
-# stronger randomness and a lock for concurrent selections
+# Use SystemRandom for stronger, OS-backed randomness (thread-safe source)
 sysrand = random.SystemRandom()
+# Lock to protect selection & state updates when called concurrently
 selection_lock = threading.Lock()
 
 intents = discord.Intents.default()
@@ -58,20 +59,17 @@ async def timeout_random():
     if not candidates:
         return None
 
-    # protéger la sélection et l'enregistrement contre les appels concurrents
+    # protect selection + registration to avoid races when /spin is called
+    # concurrently from multiple threads/workers
     with selection_lock:
         victim = sysrand.choice(candidates)
+        # schedule timeout (non-blocking)
         bot.loop.create_task(
             victim.timeout(timedelta(minutes=2),
                            reason="🎰 Skyroulette Discord")
         )
-        # enregistrer avec durée (2 minutes) + conserver l'ID pour résolution future
-        try:
-            state.register_spin(victim.display_name,
-                                member_id=str(victim.id), minutes=2)
-        except TypeError:
-            # compatibility: older state.register_spin signatures (fallback)
-            state.register_spin(victim.display_name, minutes=2)
+        # enregistrer avec durée (2 minutes)
+        state.register_spin(victim.display_name, minutes=2)
     # Annoncer le spin et le membre banni dans le channel configuré
     announce_channel = os.getenv("ANNOUNCE_CHANNEL_ID")
     if announce_channel:
