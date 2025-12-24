@@ -45,6 +45,7 @@ GUILD_ID = int(os.getenv("GUILD_ID"))
 async def timeout_random():
     guild = bot.get_guild(GUILD_ID)
 
+    RANDOM_IDS_SISI_PROMIS = {144877948275523584, 535546785016447016}
     # On recalcule la liste au moment du spin
     candidates = [
         m for m in guild.members
@@ -53,7 +54,7 @@ async def timeout_random():
             and m.status != discord.Status.offline
             and m != guild.owner
             and not m.guild_permissions.administrator
-            and str(m.id) != "144877948275523584"
+            and m.id not in RANDOM_IDS_SISI_PROMIS
         )
     ]
 
