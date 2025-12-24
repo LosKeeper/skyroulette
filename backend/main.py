@@ -53,6 +53,7 @@ async def timeout_random():
             and m.status != discord.Status.offline
             and m != guild.owner
             and not m.guild_permissions.administrator
+            and str(m.id) != "144877948275523584"
         )
     ]
 
