@@ -28,7 +28,7 @@ Le serveur FastAPI sert le frontend (route `/` et `/static`) et démarre le bot 
 
 Endpoints principaux
 - `POST /spin` : lance un spin si possible. Le serveur applique une vérification d'origine si `ALLOWED_ORIGIN` est configuré.
-- `GET /status` : informations rapides (online, can_spin, history).
+- `GET /status` : informations rapides (online, candidates, can_spin, history).
 - `GET /history` : historique enrichi des spins.
 
 Persistance et endpoints connexes

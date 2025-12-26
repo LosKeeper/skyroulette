@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
 import asyncio
+import data
 
 load_dotenv()
 
@@ -46,15 +47,7 @@ async def timeout_random():
     guild = bot.get_guild(GUILD_ID)
 
     # On recalcule la liste au moment du spin
-    candidates = [
-        m for m in guild.members
-        if (
-            not m.bot
-            and m.status != discord.Status.offline
-            and m != guild.owner
-            and not m.guild_permissions.administrator
-        )
-    ]
+    candidates = data.candidate_members(guild)
 
     if not candidates:
         return None
@@ -134,7 +127,8 @@ async def spin(request: Request):
 @app.get("/status")
 async def status():
     return {
-        "online": len(state.online_members),
+        "online": len(data.online_members(bot.get_guild(GUILD_ID))),
+        "candidates": len(data.candidate_members(bot.get_guild(GUILD_ID))),
         "can_spin": state.can_spin(),
         "history": state.history[-5:]
     }

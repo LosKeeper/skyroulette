@@ -122,3 +122,6 @@ yarn-error.log*
 
 # Persisted timeouts
 backend/timeouts.json
+
+# VS Code settings
+.vscode/
