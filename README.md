@@ -44,3 +44,4 @@ Frontend
 Notes
 - Le frontend est dans le dossier `frontend/` et est monté sur `/static`.
 - Pour pinner des versions exactes, exécuter `pip freeze > backend/requirements.txt` dans un environnement contrôlé.
+- Durant la Happy Hour, les durées de timeout sont de 1 min et le cooldown entre spins est réduit à 5 minutes.
