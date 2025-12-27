@@ -184,7 +184,7 @@ btn.addEventListener("click", async () => {
                 // Rafraîchir depuis le serveur pour récupérer l'historique partagé (et n'afficher que les 5 derniers)
                 setTimeout(() => { loadHistory(); loadTopBanned(); }, 400);
             } else if (data.status === "cooldown") {
-                resultEl.innerText = "⏳ Roulette déjà utilisée cette heure";
+                resultEl.innerText = "⏳ Roulette en cooldown, réessayez plus tard";
                 resultEl.classList.add("note");
             } else {
                 resultEl.innerText = "❌ Aucun membre éligible";
@@ -218,6 +218,16 @@ async function checkStatus() {
             if (banner) {
                 if (data.happy_hour) {
                     banner.classList.remove("hidden");
+                    // mettre à jour les heures affichées si fournies par le backend
+                    try {
+                        const hoursEl = banner.querySelector('.happy-hour-hours');
+                        if (hoursEl && typeof data.happy_hour_start !== 'undefined' && typeof data.happy_hour_end !== 'undefined') {
+                            const pad = (n) => String(n).padStart(2, '0');
+                            hoursEl.textContent = `de ${pad(data.happy_hour_start)}h à ${pad(data.happy_hour_end)}h`;
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
                 } else {
                     banner.classList.add("hidden");
                 }

@@ -66,26 +66,38 @@ async def timeout_random():
         )
         # enregistrer avec durée et member_id pour pouvoir
         # résoudre le membre plus tard même si son display_name change
-        state.register_spin(victim.display_name, str(victim.id), minutes=duration_minutes)
+        state.register_spin(victim.display_name, str(
+            victim.id), minutes=duration_minutes)
     # Annoncer le spin et le membre banni dans le channel configuré
     announce_channel = os.getenv("ANNOUNCE_CHANNEL_ID")
     if announce_channel:
         try:
             channel = bot.get_channel(int(announce_channel))
             if channel:
+                happy_prefix = "[🍻 Happy Hour] " if state.is_happy_hour(
+                ) else ""
                 templates = [
-                    "🎡 La roue tourne... *tic tac* 🎶 {mention} a atterri sur la case PERDU · banni·e {minutes} minutes ! ⏳💥",
-                    "🛑 BOOM ! {mention} a été choisi·e par la destinée — {minutes} minutes de timeout. 🎲",
-                    "🥀 Oh non, {mention}... la roue t'a décidé pour toi. Pause de {minutes} minutes, reviens-nous en un morceau. 😅",
-                    "🏴‍☠️ Par les sabres ! {mention} est envoyé·e au coffre pendant {minutes} minutes. Arrr!",
-                    "✨ Destin accompli : {mention} prend un petit break de {minutes} minutes. Profites-en pour boire un café ☕",
-                    "🎯 Coup de théâtre : {mention} ciblé·e — {minutes} minutes pour méditer ses choix. 🧘",
-                    "🔥 Quelle chaleur ! {mention} se retrouve en cooldown pendant {minutes} minutes. Rafraîchis-toi. ❄️",
-                    "🤖 Système: Randomizer a sélectionné {mention}. Maintenance programmée: {minutes} minutes."
+                    happy_prefix +
+                    "🎡 La roue tourne... *tic tac* 🎶 {mention} a atterri sur la case PERDU · banni·e {minutes} ! ⏳💥",
+                    happy_prefix +
+                    "🛑 BOOM ! {mention} a été choisi·e par la destinée — {minutes} de timeout. 🎲",
+                    happy_prefix +
+                    "🥀 Oh non, {mention}... la roue t'a décidé pour toi. Pause de {minutes}, reviens-nous en un morceau. 😅",
+                    happy_prefix +
+                    "🏴‍☠️ Par les sabres ! {mention} est envoyé·e au coffre pendant {minutes}. Arrr!",
+                    happy_prefix +
+                    "✨ Destin accompli : {mention} prend un petit break de {minutes}. Profites-en pour boire un café ☕",
+                    happy_prefix +
+                    "🎯 Coup de théâtre : {mention} ciblé·e — {minutes} pour méditer ses choix. 🧘",
+                    happy_prefix +
+                    "🔥 Quelle chaleur ! {mention} se retrouve en cooldown pendant {minutes}. Rafraîchis-toi. ❄️",
+                    happy_prefix +
+                    "🤖 Système: Randomizer a sélectionné {mention}. Maintenance programmée: {minutes}."
                 ]
+                minutes = f"{duration_minutes} minute" if duration_minutes == 1 else f"{duration_minutes} minutes"
                 chosen = sysrand.choice(templates)
                 message = chosen.format(
-                    name=victim.display_name, mention=victim.mention, minutes=duration_minutes)
+                    name=victim.display_name, mention=victim.mention, minutes=minutes)
                 # Envoyer via la boucle du bot pour éviter "Timeout context manager"
                 try:
                     bot.loop.create_task(channel.send(message))
@@ -134,6 +146,8 @@ async def status():
         "candidates": len(data.candidate_members(bot.get_guild(GUILD_ID))),
         "can_spin": state.can_spin(),
         "happy_hour": state.is_happy_hour(),
+        "happy_hour_start": int(os.getenv("START_HOUR_HAPPY_HOUR", 17)),
+        "happy_hour_end": int(os.getenv("END_HOUR_HAPPY_HOUR", 18)),
         "history": state.history[-5:]
     }
 
