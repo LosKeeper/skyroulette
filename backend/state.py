@@ -79,9 +79,8 @@ def seconds_until_next_spin():
         start_hour = int(os.getenv("START_HOUR_HAPPY_HOUR", 17))
         happy_hour_start = now.replace(hour=start_hour, minute=0, second=0, microsecond=0)
         if last_spin < happy_hour_start < now:
-            time_until_happy_hour = happy_hour_start - now
-            happy_hour_cooldown = timedelta(minutes=5)
-            remaining = min(remaining, time_until_happy_hour + happy_hour_cooldown)
+            time_until_happy_hour = max(happy_hour_start - now, timedelta(minutes=5))
+            remaining = min(remaining, time_until_happy_hour)
     return int(remaining.total_seconds())
 
 
