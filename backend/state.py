@@ -20,7 +20,11 @@ def _load_persistent():
             # set last_spin from last entry if present
             try:
                 last_entry = history[-1]
-                last_spin = datetime.fromisoformat(last_entry.get("time"))
+                parsed = datetime.fromisoformat(last_entry.get("time"))
+                # ensure last_spin is timezone-aware (Europe/Paris) for consistent arithmetic
+                if parsed.tzinfo is None:
+                    parsed = parsed.replace(tzinfo=ZoneInfo("Europe/Paris"))
+                last_spin = parsed
             except Exception:
                 last_spin = None
     except Exception:
@@ -90,7 +94,8 @@ def can_spin():
         return True
 
     limit = timedelta(minutes=5) if is_happy_hour() else timedelta(hours=1)
-    return datetime.utcnow() - last_spin >= limit
+    # use currtime() (Europe/Paris, timezone-aware) to match last_spin which is stored timezone-aware
+    return currtime() - last_spin >= limit
 
 
 def register_spin(member_name, member_id=None, minutes=2):
@@ -101,7 +106,8 @@ def register_spin(member_name, member_id=None, minutes=2):
     preserving the original recorded name.
     """
     global last_spin
-    last_spin = datetime.utcnow()
+    # use timezone-aware current time (Europe/Paris) so arithmetic with currtime() is consistent
+    last_spin = currtime()
     ends_at = last_spin + timedelta(minutes=minutes)
     entry = {
         "member": member_name,
