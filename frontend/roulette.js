@@ -19,9 +19,21 @@ let cooldownSeconds = 0;
 
 // util: format date FR
 function formatDate(ts) {
-    const d = typeof ts === "number"
-        ? new Date(ts * 1000) // timestamp UNIX
-        : new Date(ts);
+    let d;
+    if (typeof ts === "number") {
+        d = new Date(ts * 1000); // timestamp UNIX
+    } else if (typeof ts === "string") {
+        // Certains ISO incluent un offset (ex: +01:00) alors que
+        // les timestamps fournis sont déjà en heure de Paris.
+        // Pour éviter un double décalage, on supprime le designateur
+        // de fuseau horaire ("+HH:MM" ou "Z") et on tronque les
+        // microsecondes en millisecondes (JS n'attend que 3 chiffres).
+        let s = ts.replace(/([+-]\d{2}:\d{2}|Z)$/, '');
+        s = s.replace(/\.(\d{3})\d*$/, '.$1');
+        d = new Date(s);
+    } else {
+        d = new Date(ts);
+    }
 
     return new Intl.DateTimeFormat("fr-FR", {
         timeZone: "Europe/Paris",
