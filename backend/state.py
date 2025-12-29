@@ -40,6 +40,21 @@ def currtime() -> datetime:
     return datetime.now(ZoneInfo("Europe/Paris"))
 
 
+def happy_hour_start_end() -> tuple[int, int]:
+    """Get the start and end hours of Happy Hour from environment variables.
+
+    Returns a tuple (start_hour, end_hour). Defaults to (17, 18) if not set.
+    """
+    start_env = os.getenv("START_HOUR_HAPPY_HOUR", "17")
+    end_env = os.getenv("END_HOUR_HAPPY_HOUR", "18")
+    try:
+        start_hour = int(start_env)
+        end_hour = int(end_env)
+        return start_hour, end_hour
+    except ValueError:
+        return 17, 18
+
+
 def is_happy_hour(now: datetime = None) -> bool:
     """Check if it is currently Happy Hour (Paris time).
 
@@ -49,8 +64,7 @@ def is_happy_hour(now: datetime = None) -> bool:
     try:
         if now is None:
             now = currtime()
-        start_hour = int(os.getenv("START_HOUR_HAPPY_HOUR", 17))
-        end_hour = int(os.getenv("END_HOUR_HAPPY_HOUR", 18))
+        start_hour, end_hour = happy_hour_start_end()
         return start_hour <= now.hour < end_hour
     except Exception:
         return False
@@ -80,7 +94,7 @@ def seconds_until_next_spin():
 
     if not in_happy_hour:
         # check if last spin was before happy-hour started
-        start_hour = int(os.getenv("START_HOUR_HAPPY_HOUR", 17))
+        start_hour, _ = happy_hour_start_end()
         happy_hour_start = now.replace(hour=start_hour, minute=0, second=0, microsecond=0)
         if last_spin < happy_hour_start < now:
             time_until_happy_hour = max(happy_hour_start - now, timedelta(minutes=5))

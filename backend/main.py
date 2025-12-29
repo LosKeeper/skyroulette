@@ -141,13 +141,14 @@ async def spin(request: Request):
 
 @app.get("/status")
 async def status():
+    start_hour, end_hour = state.happy_hour_start_end()
     return {
         "online": len(data.online_members(bot.get_guild(GUILD_ID))),
         "candidates": len(data.candidate_members(bot.get_guild(GUILD_ID))),
         "can_spin": state.can_spin(),
         "happy_hour": state.is_happy_hour(),
-        "happy_hour_start": int(os.getenv("START_HOUR_HAPPY_HOUR", 17)),
-        "happy_hour_end": int(os.getenv("END_HOUR_HAPPY_HOUR", 18)),
+        "happy_hour_start": start_hour,
+        "happy_hour_end": end_hour,
         "cooldown_seconds": state.seconds_until_next_spin(),
         "history": state.history[-5:]
     }
