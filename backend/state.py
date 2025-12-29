@@ -95,26 +95,26 @@ def seconds_until_next_spin():
     if remaining.total_seconds() <= 0:
         return 0
 
+    # logic for transitions around happy hours
+    start_hour, end_hour = happy_hour_start_end()
     if not in_happy_hour:
         # check if next spin would be in happy hour
-        start_hour, _ = happy_hour_start_end()
         happy_hour_start = now.replace(hour=start_hour, minute=0, second=0, microsecond=0)
         if last_spin < happy_hour_start <= now + remaining:
             time_until_happy_hour = happy_hour_start - now
             # if the time until happy hour is more than the happy hour cooldown, use the time until happy hour
-            # otherwise, add some extra time to reach the happy hour cooldown
+            # otherwise, add some extra time so that would only have waited the happy hour cooldown in total
             if time_until_happy_hour > happy_hour_cooldown:
-                return int(time_until_happy_hour.total_seconds())
+                remaining = time_until_happy_hour
             else:
-                return int(happy_hour_cooldown.total_seconds())
+                remaining = happy_hour_cooldown - time_until_happy_hour
     if in_happy_hour:
-        # when in happy hour, if the next spin is after the happy hour will end, we need to wait the standard cooldown
-        _, end_hour = happy_hour_start_end()
+        # when in happy hour, if the next spin is after the happy hour will end,
+        # we need to wait the standard cooldown (minus elapsed time)
         happy_hour_end = now.replace(hour=end_hour, minute=0, second=0, microsecond=0)
         if last_spin + happy_hour_cooldown > happy_hour_end:
-            return int(standard_cooldown.total_seconds())
+            remaining = standard_cooldown - elapsed
 
-    # if we did not return yet
     return int(remaining.total_seconds())
 
 
