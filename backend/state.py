@@ -78,6 +78,7 @@ def seconds_until_next_spin():
     If we are not in happy hour, the cooldown period is 1 hour (3600 seconds), otherwise it is 5 minutes (300 seconds).
     If the last spin happened before happy-hour started and the next spin is during happy-hour,
     consider the smallest cooldown between: the remaining time until happy-hour starts, and the happy-hour cooldown.
+    If we are in happy hour and the last spin is after the last "cooldown" minutes, we need to wait the standard cooldown.
     """
     global last_spin
     if not last_spin:
@@ -85,31 +86,41 @@ def seconds_until_next_spin():
 
     now = currtime()
     in_happy_hour = is_happy_hour(now)
-    cooldown = timedelta(minutes=5) if in_happy_hour else timedelta(hours=1)
+    happy_hour_cooldown = timedelta(minutes=5)
+    standard_cooldown = timedelta(hours=1)
+    cooldown = happy_hour_cooldown if in_happy_hour else standard_cooldown
     elapsed = now - last_spin
     remaining = cooldown - elapsed
 
     if remaining.total_seconds() <= 0:
         return 0
 
+    # logic for transitions around happy hours
+    start_hour, end_hour = happy_hour_start_end()
     if not in_happy_hour:
-        # check if last spin was before happy-hour started
-        start_hour, _ = happy_hour_start_end()
+        # check if next spin would be in happy hour
         happy_hour_start = now.replace(hour=start_hour, minute=0, second=0, microsecond=0)
-        if last_spin < happy_hour_start < now:
-            time_until_happy_hour = max(happy_hour_start - now, timedelta(minutes=5))
-            remaining = min(remaining, time_until_happy_hour)
+        if last_spin < happy_hour_start <= now + remaining:
+            time_until_happy_hour = happy_hour_start - now
+            # if the time until happy hour is more than the happy hour cooldown, use the time until happy hour
+            # otherwise, add some extra time so that would only have waited the happy hour cooldown in total
+            if time_until_happy_hour > happy_hour_cooldown:
+                remaining = time_until_happy_hour
+            else:
+                remaining = happy_hour_cooldown - time_until_happy_hour
+    if in_happy_hour:
+        # when in happy hour, if the next spin is after the happy hour will end,
+        # we need to wait the standard cooldown (minus elapsed time)
+        happy_hour_end = now.replace(hour=end_hour, minute=0, second=0, microsecond=0)
+        if last_spin + happy_hour_cooldown > happy_hour_end:
+            remaining = standard_cooldown - elapsed
+
     return int(remaining.total_seconds())
 
 
 def can_spin():
-    global last_spin
-    if not last_spin:
-        return True
-
-    limit = timedelta(minutes=5) if is_happy_hour() else timedelta(hours=1)
-    # use currtime() (Europe/Paris, timezone-aware) to match last_spin which is stored timezone-aware
-    return currtime() - last_spin >= limit
+    """Check if a new spin can be performed based on the cooldown period."""
+    return seconds_until_next_spin() == 0
 
 
 def register_spin(member_name, member_id=None, minutes=2):
