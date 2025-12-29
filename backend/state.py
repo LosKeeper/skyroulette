@@ -93,23 +93,25 @@ def seconds_until_next_spin():
         return 0
 
     if not in_happy_hour:
-        # check if last spin was before happy-hour started
+        # check if next spin would be in happy hour
         start_hour, _ = happy_hour_start_end()
         happy_hour_start = now.replace(hour=start_hour, minute=0, second=0, microsecond=0)
-        if last_spin < happy_hour_start < now:
-            time_until_happy_hour = max(happy_hour_start - now, timedelta(minutes=5))
-            remaining = min(remaining, time_until_happy_hour)
+        if last_spin < happy_hour_start <= now + remaining:
+            time_until_happy_hour = happy_hour_start - now
+            happy_hour_cooldown = timedelta(minutes=5)
+            # if the time until happy hour is more than the happy hour cooldown, use the time until happy hour
+            # otherwise, add some extra time to reach the happy hour cooldown
+            if time_until_happy_hour > happy_hour_cooldown:
+                return int(time_until_happy_hour.total_seconds())
+            else:
+                extra = happy_hour_cooldown - time_until_happy_hour
+                return int(time_until_happy_hour.total_seconds() + extra.total_seconds())
     return int(remaining.total_seconds())
 
 
 def can_spin():
-    global last_spin
-    if not last_spin:
-        return True
-
-    limit = timedelta(minutes=5) if is_happy_hour() else timedelta(hours=1)
-    # use currtime() (Europe/Paris, timezone-aware) to match last_spin which is stored timezone-aware
-    return currtime() - last_spin >= limit
+    """Check if a new spin can be performed based on the cooldown period."""
+    return seconds_until_next_spin() == 0
 
 
 def register_spin(member_name, member_id=None, minutes=2):
