@@ -59,6 +59,29 @@ function formatCooldown(seconds) {
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
+/**
+ * Formats a duration given in minutes.
+ * @param {number} totalMinutes – non‑negative integer
+ * @returns {string} e.g. "12 heures et 37 minutes" or "59 minutes"
+ */
+function formatDuration(totalMinutes) {
+    // coerce to non-negative integer
+    totalMinutes = Number(totalMinutes) || 0;
+    totalMinutes = Math.max(0, Math.floor(totalMinutes));
+
+    const hrs = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+
+    if (hrs > 0 && mins > 0) {
+        return `${hrs} heure${hrs !== 1 ? 's' : ''} et ${mins} minute${mins !== 1 ? 's' : ''}`;
+    }
+    if (hrs > 0) {
+        return `${hrs} heure${hrs !== 1 ? 's' : ''}`;
+    }
+    // hrs === 0
+    return `${mins} minute${mins !== 1 ? 's' : ''}`;
+}
+
 function updateButtonState() {
     if (cooldownSeconds > 0) {
         btn.textContent = `Lancer dans ${formatCooldown(cooldownSeconds)}`;
@@ -170,7 +193,7 @@ async function loadTopBanned() {
                 <div class="avatar-lg">${initialsFromName(item.member)}</div>
                 <div class="meta-lg">
                     <div class="member-lg">${item.member}</div>
-                    <div class="time-lg">${item.total_minutes} minutes cumulées</div>
+                    <div class="time-lg">Total ${formatDuration(item.total_minutes)}</div>
                 </div>
             </div>
         `).join('');
